@@ -2,7 +2,7 @@ import { useCallback, useEffect, useMemo, useState } from "react";
 import { useSearchParams } from "react-router-dom";
 import { api, urlFichier } from "../../services/api";
 import Icone from "../../assets/Components/Icone";
-import DossierEtudiant from "../../Pages/Admin/DossierEtudiant";
+import DossierEtudiant from "./DossierEtudiant";
 import FormulaireUtilisateur, { enregistrerUtilisateur, versFormulaire, videUtilisateur } from "../../assets/Components/FormulaireUtilisateur";
 
 const PAR_PAGE = 8;
