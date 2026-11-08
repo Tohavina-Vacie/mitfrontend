@@ -4,10 +4,6 @@
   --nav-orange-hover: #ffa047;
 }
 
-/* décale le contenu sous la barre fixe */
-body {
-  padding-top: var(--nav-height);
-}
 
 /* les pages login / inscription ne dépassent plus de l'écran */
 body .signup-page {

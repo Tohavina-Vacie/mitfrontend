@@ -15,7 +15,7 @@ export default function Navbar() {
   const close = () => setOpen(false);
 
   return (
-    <nav className="navbar navbar-expand-lg navbar-dark fixed-top navbar-mit">
+    <nav className="navbar navbar-expand-lg navbar-dark sticky-top navbar-mit">
       <div className="container-fluid px-3 px-lg-4">
         <Link to="/" className="navbar-brand brand-mit" onClick={close}>
           <span className="brand-mit-logo"><img src="/entreprises/logo.jpg" alt="" srcset="" width={120} height={80}/></span>
