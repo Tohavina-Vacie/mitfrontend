@@ -1,3 +1,4 @@
+import ScrollToTop from "./ScrollToTop";
 import { Routes, Route, useLocation } from "react-router-dom";
 import { AuthProvider } from "./Context/AuthContext";
 import ProtectedRoute from "./assets/Components/ProtectedRoute";
@@ -87,7 +88,7 @@ export default function App() {
   return (
     <AuthProvider>
       {!dansDashboard && <Navbar />}
-
+      <ScrollToTop />
       <Routes>
         {/* Site public */}
         <Route path="/" element={<Home />} />
