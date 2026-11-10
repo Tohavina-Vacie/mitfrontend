@@ -22,7 +22,7 @@ const faqs = [
 
 // TODO : remplacez par vos vraies actualités
 const news = {
-  img: "/documentation/actualite.jpg",
+  img: "/public/entreprises/campus.jpg",
   tag: "Actualité · Admissions",
   title: "Candidatures 2026 : le calendrier d’admission est en ligne",
   text: "Dépôt des dossiers de janvier à avril, tests et entretiens en mai, matchmaking alternance en juin-juillet et rentrée en octobre 2026.",
