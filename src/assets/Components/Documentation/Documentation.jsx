@@ -22,7 +22,7 @@ const faqs = [
 
 // TODO : remplacez par vos vraies actualités
 const news = {
-  img: "/public/entreprises/campus.jpg",
+  img: "/entreprises/campus.jpg",
   tag: "Actualité · Admissions",
   title: "Candidatures 2026 : le calendrier d’admission est en ligne",
   text: "Dépôt des dossiers de janvier à avril, tests et entretiens en mai, matchmaking alternance en juin-juillet et rentrée en octobre 2026.",
@@ -157,7 +157,7 @@ export default function Documentation() {
           <article className="doc-news">
             <div className="doc-news-img">
               {/* Photo dans public/documentation/actualite.jpg */}
-              <img src={"/public/entreprises/campus.jpg"} alt="" />
+              <img src={"/entreprises/campus.jpg"} alt="" />
               <span className="doc-news-more" aria-hidden="true">Lire la suite →</span>
             </div>
             <div className="doc-news-body">
