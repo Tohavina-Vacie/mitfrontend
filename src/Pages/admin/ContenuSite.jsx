@@ -50,7 +50,7 @@ const SOUS_TITRE = { fontSize: ".76rem", fontWeight: 600, margin: "10px 0 6px" }
 const MENUS = [
   { cle: "accueil", libelle: "Accueil", pages: ["accueil"] },
   { cle: "ecole", libelle: "École", pages: ["ecole"] },
-  { cle: "formations", libelle: "Formations", pages: ["fullstack", "cybersecurite", "metiers-informatique"] },
+  { cle: "formations", libelle: "Formations", pages: ["formations", "fullstack", "cybersecurite", "metiers-informatique"] },
   { cle: "alternance", libelle: "Alternance", pages: ["alternance"] },
   { cle: "entreprises", libelle: "Entreprises", pages: ["entreprises"] },
   { cle: "documentation", libelle: "Documentation", pages: ["documentation"] },

@@ -65,6 +65,95 @@ export const CONTENUS_MENUS = {
       },
     },
   
+    /* ----------------------------- Formations ----------------------------- */
+    formations: {
+      hero: {
+        titre: "Nos Formations d’Excellence",
+        texte: "Devenez un leader technologique grâce à nos parcours d’ingénierie active, alliant théories solides et apprentissage par la pratique en entreprise.",
+      },
+      bachelors: {
+        titre: "Bachelors (Bac+3)",
+        sous_titre: "Ciblez l’employabilité rapide grâce à un cursus structuré d’initiation et de consolidation informatique.",
+        formations: [
+          {
+            titre: "Développeur Fullstack & Cloud",
+            duree: "3 ans d’études",
+            acces: "Bac requis",
+            prerequis: "Bac requis (série math/technique)",
+            etiquette: "Modules clés :",
+            modules: ["HTML / CSS / JavaScript", "React & Node.js", "Bases de données", "API REST", "Docker & Cloud", "Gestion de projet agile"],
+          },
+          {
+            titre: "Cybersécurité & Systèmes",
+            duree: "3 ans d’études",
+            acces: "Bac requis",
+            prerequis: "Bac requis (série math/technique)",
+            etiquette: "Modules clés :",
+            modules: ["Administration Linux & Windows", "Réseaux & protocoles", "Sécurité des systèmes", "Virtualisation", "Scripting Bash / PowerShell", "Supervision"],
+          },
+          {
+            titre: "Data & Intelligence Artificielle",
+            duree: "3 ans d’études",
+            acces: "Bac requis",
+            prerequis: "Bac requis (série math/technique)",
+            etiquette: "Modules clés :",
+            modules: ["Python & algorithmique", "Statistiques & probabilités", "Bases de données SQL", "Machine Learning", "Visualisation de données", "Introduction au Deep Learning"],
+          },
+        ],
+      },
+      masters: {
+        titre: "Masters (Bac+5)",
+        sous_titre: "Spécialisez-vous pour diriger des équipes techniques de haut vol et maîtriser les architectures de demain.",
+        formations: [
+          {
+            titre: "Tech Innovation & Strategies",
+            duree: "2 ans d’études",
+            acces: "Bac+3 compatible",
+            prerequis: "",
+            etiquette: "Enseignement avancé :",
+            modules: ["Management de l’innovation", "Architecture logicielle avancée", "Stratégie digitale", "Gestion de projets complexes", "Cloud-native & DevOps", "Entrepreneuriat tech"],
+          },
+          {
+            titre: "Data Science & IA Avancée",
+            duree: "2 ans d’études",
+            acces: "Bac+3 compatible",
+            prerequis: "",
+            etiquette: "Enseignement avancé :",
+            modules: [
+              "Réseaux de neurones profonds (Deep Learning)",
+              "Traitement automatique du langage (NLP)",
+              "Computer Vision",
+              "Gestion opérationnelle d’IA (MLOps)",
+              "Éthique de l’IA & Biais",
+              "Optimisation de pipelines de données",
+            ],
+          },
+        ],
+      },
+      debouches: {
+        titre: "Débouchés & Insertion Professionnelle",
+        sous_titre: "Des salaires moyens de sortie de premier ordre pour des carrières ambitieuses à l’international.",
+        metiers: [
+          { metier: "Data Scientist / Ingénieur IA", salaire: "44,000 € - 62,000 € / an" },
+          { metier: "Développeur Full-Stack", salaire: "À définir" },
+          { metier: "Ingénieur Cloud / DevOps", salaire: "À définir" },
+          { metier: "Analyste Cybersécurité", salaire: "À définir" },
+          { metier: "Administrateur Systèmes & Réseaux", salaire: "À définir" },
+          { metier: "Chef de projet Innovation", salaire: "À définir" },
+        ],
+      },
+      calendrier: {
+        titre: "Calendrier d’Admission 2026",
+        sous_titre: "Suivez les étapes clés de sélection pour nous rejoindre à la rentrée.",
+        etapes: [
+          { numero: "01", periode: "Janv - Avril 2026", titre: "Candidature en Ligne", texte: "Dépôt des dossiers académiques de candidature en quelques clics." },
+          { numero: "02", periode: "Mai 2026", titre: "Tests & Entretiens", texte: "Évaluation de la logique, tests de code et entretiens de motivation." },
+          { numero: "03", periode: "Juin - Juillet 2026", titre: "Matchmaking Alternance", texte: "Coaching intensif et entretiens avec nos 200+ entreprises partenaires." },
+          { numero: "04", periode: "Octobre 2026", titre: "Rentrée Académique", texte: "Démarrage officiel des cours et de l’intégration professionnelle." },
+        ],
+      },
+    },
+  
     /* ----------------------------- Alternance ----------------------------- */
     alternance: {
       hero: {
@@ -244,6 +333,18 @@ export const CONTENUS_MENUS = {
         ["partenaires", "Partenaires"],
         ["valeurs", "Valeurs fondatrices"],
         ["appel", "Appel à l'action"],
+      ],
+    },
+    {
+      page: "formations",
+      libelle: "Page Formations",
+      url: "/formations",
+      sections: [
+        ["hero", "Bandeau d'accueil"],
+        ["bachelors", "Bachelors (Bac+3)"],
+        ["masters", "Masters (Bac+5)"],
+        ["debouches", "Débouchés et salaires"],
+        ["calendrier", "Calendrier d'admission"],
       ],
     },
     {
