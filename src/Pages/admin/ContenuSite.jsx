@@ -10,6 +10,38 @@ const SLUG = /^[a-z0-9-]{1,50}$/;
 const TAILLE_MAX = 50000;
 const copie = (o) => JSON.parse(JSON.stringify(o));
 
+/* Panneau de gauche : reste visible quand on fait défiler la page et défile seul s'il est trop long.
+   Si le tableau de bord a son propre conteneur de défilement, diminuez "top" (ex. 16). */
+const PANNEAU = {
+  position: "sticky",
+  top: 90,
+  alignSelf: "start",
+  maxHeight: "calc(100vh - 110px)",
+  overflowY: "auto",
+  overscrollBehavior: "contain",
+};
+
+const ENTETE_PAGE = {
+  display: "flex",
+  alignItems: "center",
+  justifyContent: "space-between",
+  gap: 8,
+  width: "100%",
+  padding: "10px 4px",
+  background: "transparent",
+  border: 0,
+  borderBottom: "1px solid rgba(255,255,255,.08)",
+  color: "inherit",
+  textAlign: "left",
+  cursor: "pointer",
+};
+
+const LISTE_SECTIONS = {
+  margin: "8px 0 4px 6px",
+  paddingLeft: 10,
+  borderLeft: "2px solid rgba(232,118,31,.4)",
+};
+
 export default function ContenuSite() {
   const [existants, setExistants] = useState({});
   const [choix, setChoix] = useState(null);
@@ -24,6 +56,10 @@ export default function ContenuSite() {
   const [message, setMessage] = useState("");
   const [erreur, setErreur] = useState("");
   const [envoi, setEnvoi] = useState(false);
+  // Pages dépliées dans le panneau de gauche (la première est ouverte au départ)
+  const [ouverts, setOuverts] = useState(() => (CATALOGUE[0] ? { [CATALOGUE[0].page]: true } : {}));
+
+  const basculer = (page) => setOuverts((o) => ({ ...o, [page]: !o[page] }));
 
   const chargerExistants = useCallback(async () => {
     const liste = await api("/contenus");
@@ -40,6 +76,7 @@ export default function ContenuSite() {
     const o = enregistre?.ordre ?? 0;
     const p = enregistre?.publie ?? true;
     setChoix({ page, section });
+    setOuverts((x) => ({ ...x, [page]: true }));
     setBrouillon(donnees);
     setOrdre(o);
     setPublie(p);
@@ -113,11 +150,21 @@ export default function ContenuSite() {
 
   const catalogue = CATALOGUE;
   const connu = (c) => catalogue.some((p) => p.page === c.page && p.sections.some(([s]) => s === c.section));
-  const autres = Object.values(existants).filter((c) => !connu(c));
+
+  // Sections créées par l'admin (absentes du catalogue). Une section « Nouvelle » encore non enregistrée y figure aussi.
+  const virtuelle = choix && !connu(choix) && !existants[`${choix.page}/${choix.section}`]
+    ? [{ page: choix.page, section: choix.section, virtuelle: true }]
+    : [];
+  const autres = [...Object.values(existants).filter((c) => !connu(c)), ...virtuelle];
+  // Pages entièrement nouvelles (absentes du catalogue)
+  const pagesLibres = [...new Set(autres.filter((c) => !catalogue.some((p) => p.page === c.page)).map((c) => c.page))];
+
   const etat = (page, section) => {
     const c = existants[`${page}/${section}`];
     return !c ? ["gris", "Original"] : c.publie ? ["vert", "Modifié"] : ["orange", "Non publié"];
   };
+  const etatAutre = (c) => (c.virtuelle ? ["orange", "Nouveau"] : etat(c.page, c.section));
+
   const pageChoisie = choix && catalogue.find((p) => p.page === choix.page);
   const libelleSection = pageChoisie?.sections.find(([s]) => s === choix.section)?.[1] || choix?.section;
 
@@ -127,6 +174,48 @@ export default function ContenuSite() {
     const { page, section } = nouvelle;
     setNouvelle(null);
     ouvrir(page, section, existants);
+  };
+
+  /* Une ligne de section dans le panneau */
+  const ligne = (page, section, libelle, [couleur, texte]) => {
+    const actif = choix?.page === page && choix?.section === section;
+    return (
+      <button
+        type="button"
+        key={`${page}/${section}`}
+        className={`dash-conv${actif ? " actif" : ""}`}
+        style={{ marginBottom: 6, padding: "9px 12px" }}
+        aria-current={actif ? "true" : undefined}
+        onClick={() => selectionner(page, section)}
+      >
+        <span className="texte"><strong style={{ fontSize: ".85rem" }}>{libelle}</strong></span>
+        <span className={`dash-tag ${couleur}`}>{texte}</span>
+      </button>
+    );
+  };
+
+  /* Un groupe = une page repliable, avec toutes ses sections en dessous */
+  const groupe = (page, libelle, total, nbModifies, enfants) => {
+    const ouvert = !!ouverts[page];
+    const contientChoix = choix?.page === page;
+    return (
+      <div key={page} className="mb-2">
+        <button
+          type="button"
+          style={ENTETE_PAGE}
+          aria-expanded={ouvert}
+          aria-controls={`groupe-${page}`}
+          onClick={() => basculer(page)}
+        >
+          <span style={{ display: "flex", alignItems: "center", gap: 8, minWidth: 0 }}>
+            <span aria-hidden="true" style={{ display: "inline-block", transition: "transform .15s", transform: ouvert ? "rotate(90deg)" : "none", color: "#e8761f" }}>›</span>
+            <strong style={{ fontSize: ".92rem", color: contientChoix ? "#e8761f" : undefined }}>{libelle}</strong>
+          </span>
+          <span className="dash-sous" style={{ fontSize: ".75rem", whiteSpace: "nowrap", margin: 0 }}>{nbModifies}/{total} modifiée{nbModifies > 1 ? "s" : ""}</span>
+        </button>
+        {ouvert && <div id={`groupe-${page}`} style={LISTE_SECTIONS}>{enfants}</div>}
+      </div>
+    );
   };
 
   return (
@@ -140,32 +229,32 @@ export default function ContenuSite() {
       </div>
 
       <div className="dash-colonnes" style={{ gridTemplateColumns: "300px 1fr" }}>
-        <aside className="dash-carte">
-          {catalogue.map((p) => (
-            <div key={p.page} className="mb-3">
-              <h2 style={{ fontSize: ".9rem", marginBottom: 8 }}>{p.libelle}</h2>
-              {p.sections.map(([s, libelle]) => {
-                const [couleur, texte] = etat(p.page, s);
-                const actif = choix?.page === p.page && choix?.section === s;
-                return (
-                  <button type="button" key={s} className={`dash-conv${actif ? " actif" : ""}`} style={{ marginBottom: 6, padding: "9px 12px" }} onClick={() => selectionner(p.page, s)}>
-                    <span className="texte"><strong style={{ fontSize: ".85rem" }}>{libelle}</strong></span>
-                    <span className={`dash-tag ${couleur}`}>{texte}</span>
-                  </button>
-                );
-              })}
-            </div>
-          ))}
-          {autres.length > 0 && (
-            <div className="mb-2">
-              <h2 style={{ fontSize: ".9rem", marginBottom: 8 }}>Autres sections</h2>
-              {autres.map((c) => (
-                <button type="button" key={`${c.page}/${c.section}`} className={`dash-conv${choix?.page === c.page && choix?.section === c.section ? " actif" : ""}`} style={{ marginBottom: 6, padding: "9px 12px" }} onClick={() => selectionner(c.page, c.section)}>
-                  <span className="texte"><strong style={{ fontSize: ".85rem" }}>{c.page} / {c.section}</strong></span>
-                </button>
-              ))}
-            </div>
-          )}
+        <aside className="dash-carte" style={PANNEAU} aria-label="Pages et sections du site">
+          {catalogue.map((p) => {
+            const extras = autres.filter((c) => c.page === p.page);
+            const nbModifies = p.sections.filter(([s]) => existants[`${p.page}/${s}`]).length + extras.filter((c) => existants[`${c.page}/${c.section}`]).length;
+            return groupe(
+              p.page,
+              p.libelle,
+              p.sections.length + extras.length,
+              nbModifies,
+              <>
+                {p.sections.map(([s, libelle]) => ligne(p.page, s, libelle, etat(p.page, s)))}
+                {extras.map((c) => ligne(c.page, c.section, c.section, etatAutre(c)))}
+              </>
+            );
+          })}
+
+          {pagesLibres.map((page) => {
+            const sections = autres.filter((c) => c.page === page);
+            return groupe(
+              page,
+              page,
+              sections.length,
+              sections.filter((c) => existants[`${c.page}/${c.section}`]).length,
+              sections.map((c) => ligne(c.page, c.section, c.section, etatAutre(c)))
+            );
+          })}
         </aside>
 
         <section className="dash-carte dash-editeur">
