@@ -4,6 +4,9 @@ import { api } from "../services/api";
 import ChampMotDePasse from "../assets/Components/ChampMotDePasse";
 import "../styles/auth.css";
 
+// Couleur du texte « Choisissez votre profil » tant qu'aucun profil n'est choisi (comme les autres placeholders)
+const COULEUR_PLACEHOLDER = "rgba(255, 255, 255, 0.45)";
+
 export default function Register() {
   const navigate = useNavigate();
   const [form, setForm] = useState({
@@ -17,6 +20,9 @@ export default function Register() {
   const soumettre = async (e) => {
     e.preventDefault();
     setErreur("");
+    if (!form.role) {
+      return setErreur("Choisissez votre profil");
+    }
     if (form.mot_de_passe !== form.confirmation) {
       return setErreur("Les mots de passe ne correspondent pas");
     }
@@ -25,11 +31,7 @@ export default function Register() {
       const { confirmation, ...donnees } = form;
       await api("/users/register", { method: "POST", body: donnees });
       navigate("/connexion", {
-        state: {
-          message: form.role === "enseignant"
-            ? "Compte créé. Il sera activé par l'administration : vous pourrez vous connecter après sa validation."
-            : "Compte créé, vous pouvez vous connecter.",
-        },
+        state: { message: "Compte créé, vous pouvez vous connecter." },
       });
     } catch (err) {
       setErreur(err.message);
@@ -62,11 +64,18 @@ export default function Register() {
         </div>
         <div className="mb-3">
           <label htmlFor="role">Je m'inscris en tant que</label>
-          <select id="role" name="role" className="form-select" value={form.role} onChange={change} required>
-            <option value="" disabled>Choisissez votre profil</option>
-            <option value="etudiant">Étudiant</option>
-            <option value="enseignant">Enseignant</option>
-            <option value="entreprise">Entreprise</option>
+          <select
+            id="role"
+            name="role"
+            className="form-select"
+            style={form.role ? undefined : { color: COULEUR_PLACEHOLDER }}
+            value={form.role}
+            onChange={change}
+            required
+          >
+            <option value="" disabled hidden>Choisissez votre profil</option>
+            <option value="etudiant" style={{ color: "#fff" }}>Étudiant</option>
+            <option value="entreprise" style={{ color: "#fff" }}>Entreprise</option>
           </select>
         </div>
         <div className="mb-3">
