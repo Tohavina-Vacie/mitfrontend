@@ -42,6 +42,22 @@ const LISTE_SECTIONS = {
   borderLeft: "2px solid rgba(232,118,31,.4)",
 };
 
+const SOUS_TITRE = { fontSize: ".76rem", fontWeight: 600, margin: "10px 0 6px" };
+
+/* Menus du site, dans l'ordre de la barre de navigation (Navbar.jsx).
+   "pages" = clés de page (celles de CATALOGUE dans contenusParDefaut.js) rangées sous ce menu.
+   Quand vous branchez une nouvelle page (ex. "ecole"), ajoutez sa clé dans la liste du menu correspondant. */
+const MENUS = [
+  { cle: "accueil", libelle: "Accueil", pages: ["accueil"] },
+  { cle: "ecole", libelle: "École", pages: ["ecole"] },
+  { cle: "formations", libelle: "Formations", pages: ["fullstack", "cybersecurite", "metiers-informatique"] },
+  { cle: "alternance", libelle: "Alternance", pages: ["alternance"] },
+  { cle: "entreprises", libelle: "Entreprises", pages: ["entreprises"] },
+  { cle: "documentation", libelle: "Documentation", pages: ["documentation"] },
+  { cle: "contact", libelle: "Nous contacter", pages: ["contact"] },
+];
+const menuDe = (page) => MENUS.find((m) => m.pages.includes(page))?.cle || "autres";
+
 export default function ContenuSite() {
   const [existants, setExistants] = useState({});
   const [choix, setChoix] = useState(null);
@@ -56,8 +72,8 @@ export default function ContenuSite() {
   const [message, setMessage] = useState("");
   const [erreur, setErreur] = useState("");
   const [envoi, setEnvoi] = useState(false);
-  // Pages dépliées dans le panneau de gauche (la première est ouverte au départ)
-  const [ouverts, setOuverts] = useState(() => (CATALOGUE[0] ? { [CATALOGUE[0].page]: true } : {}));
+  // Menus dépliés dans le panneau de gauche (le premier est ouvert au départ)
+  const [ouverts, setOuverts] = useState({ [MENUS[0].cle]: true });
 
   const basculer = (page) => setOuverts((o) => ({ ...o, [page]: !o[page] }));
 
@@ -76,7 +92,7 @@ export default function ContenuSite() {
     const o = enregistre?.ordre ?? 0;
     const p = enregistre?.publie ?? true;
     setChoix({ page, section });
-    setOuverts((x) => ({ ...x, [page]: true }));
+    setOuverts((x) => ({ ...x, [menuDe(page)]: true }));
     setBrouillon(donnees);
     setOrdre(o);
     setPublie(p);
@@ -156,8 +172,17 @@ export default function ContenuSite() {
     ? [{ page: choix.page, section: choix.section, virtuelle: true }]
     : [];
   const autres = [...Object.values(existants).filter((c) => !connu(c)), ...virtuelle];
-  // Pages entièrement nouvelles (absentes du catalogue)
-  const pagesLibres = [...new Set(autres.filter((c) => !catalogue.some((p) => p.page === c.page)).map((c) => c.page))];
+  // Pages qui ne figurent dans aucun menu (créées par l'admin) : rangées dans « Autres pages »
+  const pagesHorsMenu = [...new Set(autres.map((c) => c.page).filter((pg) => !MENUS.some((m) => m.pages.includes(pg))))];
+
+  // Une page avec ses sections du catalogue, ses sections ajoutées et ses compteurs
+  const decrirePage = (pg) => {
+    const p = catalogue.find((x) => x.page === pg);
+    const sections = p?.sections || [];
+    const extras = autres.filter((c) => c.page === pg);
+    const nbModifies = sections.filter(([s]) => existants[`${pg}/${s}`]).length + extras.filter((c) => existants[`${c.page}/${c.section}`]).length;
+    return { page: pg, libelle: p?.libelle || pg, sections, extras, total: sections.length + extras.length, nbModifies };
+  };
 
   const etat = (page, section) => {
     const c = existants[`${page}/${section}`];
@@ -194,26 +219,34 @@ export default function ContenuSite() {
     );
   };
 
-  /* Un groupe = une page repliable, avec toutes ses sections en dessous */
-  const groupe = (page, libelle, total, nbModifies, enfants) => {
-    const ouvert = !!ouverts[page];
-    const contientChoix = choix?.page === page;
+  /* Les sections d'une page ; le nom de la page n'est affiché que si le menu en regroupe plusieurs */
+  const bloc = (p, avecTitre) => (
+    <div key={p.page}>
+      {avecTitre && <p className="dash-sous" style={SOUS_TITRE}>{p.libelle}</p>}
+      {p.sections.map(([s, libelle]) => ligne(p.page, s, libelle, etat(p.page, s)))}
+      {p.extras.map((c) => ligne(c.page, c.section, c.section, etatAutre(c)))}
+    </div>
+  );
+
+  /* Un groupe = un menu du site, repliable, avec toutes ses sections en dessous */
+  const groupe = (cle, libelle, total, nbModifies, contientChoix, enfants) => {
+    const ouvert = !!ouverts[cle];
     return (
-      <div key={page} className="mb-2">
+      <div key={cle} className="mb-2">
         <button
           type="button"
           style={ENTETE_PAGE}
           aria-expanded={ouvert}
-          aria-controls={`groupe-${page}`}
-          onClick={() => basculer(page)}
+          aria-controls={`groupe-${cle}`}
+          onClick={() => basculer(cle)}
         >
           <span style={{ display: "flex", alignItems: "center", gap: 8, minWidth: 0 }}>
             <span aria-hidden="true" style={{ display: "inline-block", transition: "transform .15s", transform: ouvert ? "rotate(90deg)" : "none", color: "#e8761f" }}>›</span>
             <strong style={{ fontSize: ".92rem", color: contientChoix ? "#e8761f" : undefined }}>{libelle}</strong>
           </span>
-          <span className="dash-sous" style={{ fontSize: ".75rem", whiteSpace: "nowrap", margin: 0 }}>{nbModifies}/{total} modifiée{nbModifies > 1 ? "s" : ""}</span>
+          <span className="dash-sous" style={{ fontSize: ".75rem", whiteSpace: "nowrap", margin: 0 }}>{total ? `${nbModifies}/${total} modifiée${nbModifies > 1 ? "s" : ""}` : "à venir"}</span>
         </button>
-        {ouvert && <div id={`groupe-${page}`} style={LISTE_SECTIONS}>{enfants}</div>}
+        {ouvert && <div id={`groupe-${cle}`} style={LISTE_SECTIONS}>{enfants}</div>}
       </div>
     );
   };
@@ -230,31 +263,33 @@ export default function ContenuSite() {
 
       <div className="dash-colonnes" style={{ gridTemplateColumns: "300px 1fr" }}>
         <aside className="dash-carte" style={PANNEAU} aria-label="Pages et sections du site">
-          {catalogue.map((p) => {
-            const extras = autres.filter((c) => c.page === p.page);
-            const nbModifies = p.sections.filter(([s]) => existants[`${p.page}/${s}`]).length + extras.filter((c) => existants[`${c.page}/${c.section}`]).length;
+          {MENUS.map((m) => {
+            const pages = m.pages.map(decrirePage);
+            const total = pages.reduce((n, p) => n + p.total, 0);
+            const nbModifies = pages.reduce((n, p) => n + p.nbModifies, 0);
             return groupe(
-              p.page,
-              p.libelle,
-              p.sections.length + extras.length,
+              m.cle,
+              m.libelle,
+              total,
               nbModifies,
-              <>
-                {p.sections.map(([s, libelle]) => ligne(p.page, s, libelle, etat(p.page, s)))}
-                {extras.map((c) => ligne(c.page, c.section, c.section, etatAutre(c)))}
-              </>
+              !!choix && m.pages.includes(choix.page),
+              total === 0
+                ? <p className="dash-sous" style={{ fontSize: ".78rem" }}>Aucune section modifiable pour le moment.</p>
+                : pages.map((p) => bloc(p, m.pages.length > 1))
             );
           })}
 
-          {pagesLibres.map((page) => {
-            const sections = autres.filter((c) => c.page === page);
+          {pagesHorsMenu.length > 0 && (() => {
+            const pages = pagesHorsMenu.map(decrirePage);
             return groupe(
-              page,
-              page,
-              sections.length,
-              sections.filter((c) => existants[`${c.page}/${c.section}`]).length,
-              sections.map((c) => ligne(c.page, c.section, c.section, etatAutre(c)))
+              "autres",
+              "Autres pages",
+              pages.reduce((n, p) => n + p.total, 0),
+              pages.reduce((n, p) => n + p.nbModifies, 0),
+              !!choix && pagesHorsMenu.includes(choix.page),
+              pages.map((p) => bloc(p, true))
             );
-          })}
+          })()}
         </aside>
 
         <section className="dash-carte dash-editeur">
