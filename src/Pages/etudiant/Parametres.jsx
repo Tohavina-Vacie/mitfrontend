@@ -6,11 +6,14 @@ import ChampMotDePasse from "../../assets/Components/ChampMotDePasse";
 export default function Parametres() {
   const { user, majUser } = useAuth();
   const [form, setForm] = useState({
-    nom: user.nom || "", prenom: user.prenom || "", telephone: user.telephone || "",
-    adresse: user.adresse || "", date_naissance: (user.date_naissance || "").slice(0, 10),
+    nom: user.nom || "",
+    prenom: user.prenom || "",
+    telephone: user.telephone || "",
+    adresse: user.adresse || "",
+    date_naissance: (user.date_naissance || "").slice(0, 10),
   });
   const [photo, setPhoto] = useState(null);
-  const [mdp, setMdp] = useState({ nouveau: "", confirmation: "" });
+  const [mdp, setMdp] = useState({ ancien: "", nouveau: "", confirmation: "" });
   const [msgInfos, setMsgInfos] = useState(null); // { type, texte }
   const [msgMdp, setMsgMdp] = useState(null);
 
@@ -40,13 +43,17 @@ export default function Parametres() {
     e.preventDefault();
     setMsgMdp(null);
     if (mdp.nouveau !== mdp.confirmation) {
-      return setMsgMdp({ type: "danger", texte: "Les mots de passe ne correspondent pas" });
+      return setMsgMdp({
+        type: "danger",
+        texte: "Les mots de passe ne correspondent pas",
+      });
     }
     const fd = new FormData();
+    fd.append("ancien_mot_de_passe", mdp.ancien);
     fd.append("mot_de_passe", mdp.nouveau);
     try {
       await envoyer(fd);
-      setMdp({ nouveau: "", confirmation: "" });
+      setMdp({ ancien: "", nouveau: "", confirmation: "" });
       setMsgMdp({ type: "success", texte: "Mot de passe modifié" });
     } catch (err) {
       setMsgMdp({ type: "danger", texte: err.message });
@@ -56,62 +63,129 @@ export default function Parametres() {
   const champ = (n, l, type = "text", placeholder = "") => (
     <div className="col-sm-6 mb-3">
       <label htmlFor={n}>{l}</label>
-      <input id={n} name={n} type={type} className="form-control" placeholder={placeholder} value={form[n]} onChange={change} />
+      <input
+        id={n}
+        name={n}
+        type={type}
+        className="form-control"
+        placeholder={placeholder}
+        value={form[n]}
+        onChange={change}
+      />
     </div>
   );
 
   return (
     <>
       <h1 className="dash-titre">Paramètres</h1>
-      <p className="dash-sous">Gérez vos informations personnelles et la sécurité de votre compte.</p>
+      <p className="dash-sous">
+        Gérez vos informations personnelles et la sécurité de votre compte.
+      </p>
 
       <form className="dash-carte mb-3" onSubmit={enregistrerInfos}>
         <h2>Informations personnelles</h2>
-        {msgInfos && <div className={`alert alert-${msgInfos.type}`}>{msgInfos.texte}</div>}
+        {msgInfos && (
+          <div className={`alert alert-${msgInfos.type}`}>{msgInfos.texte}</div>
+        )}
         <div className="row">
           {champ("nom", "Nom", "text", "Votre nom")}
           {champ("prenom", "Prénom", "text", "Votre prénom")}
           <div className="col-sm-6 mb-3">
             <label htmlFor="email">Adresse e-mail</label>
-            <input id="email" className="form-control" value={user.email} disabled />
+            <input
+              id="email"
+              className="form-control"
+              value={user.email}
+              disabled
+            />
           </div>
           {champ("telephone", "Téléphone", "tel", "034 00 000 00")}
           {champ("date_naissance", "Date de naissance", "date")}
           {user.role === "etudiant" && (
             <div className="col-sm-6 mb-3">
               <label htmlFor="filiere">Formation et niveau</label>
-              <input id="filiere" className="form-control" disabled
-                value={[user.formation?.titre, user.niveau].filter(Boolean).join(" - ") || "Non affectée"} />
+              <input
+                id="filiere"
+                className="form-control"
+                disabled
+                value={
+                  [user.formation?.titre, user.niveau]
+                    .filter(Boolean)
+                    .join(" - ") || "Non affectée"
+                }
+              />
             </div>
           )}
           <div className="col-sm-6 mb-3">
             <label htmlFor="adresse">Adresse</label>
-            <input id="adresse" name="adresse" className="form-control" placeholder="Adresse complète" value={form.adresse} onChange={change} />
+            <input
+              id="adresse"
+              name="adresse"
+              className="form-control"
+              placeholder="Adresse complète"
+              value={form.adresse}
+              onChange={change}
+            />
           </div>
           <div className="col-sm-6 mb-3">
             <label htmlFor="photo">Photo de profil</label>
-            <input id="photo" type="file" accept="image/*" className="form-control" onChange={(e) => setPhoto(e.target.files[0])} />
+            <input
+              id="photo"
+              type="file"
+              accept="image/*"
+              className="form-control"
+              onChange={(e) => setPhoto(e.target.files[0])}
+            />
           </div>
         </div>
-        <button className="btn btn-orange">Enregistrer les modifications</button>
+        <button className="btn btn-orange">
+          Enregistrer les modifications
+        </button>
       </form>
 
       <form className="dash-carte" onSubmit={changerMdp}>
         <h2>Sécurité</h2>
-        {msgMdp && <div className={`alert alert-${msgMdp.type}`}>{msgMdp.texte}</div>}
+        {msgMdp && (
+          <div className={`alert alert-${msgMdp.type}`}>{msgMdp.texte}</div>
+        )}
         <div className="row">
+          <div className="col-12 mb-3">
+            <label htmlFor="ancien">Ancien mot de passe</label>
+            <ChampMotDePasse
+              id="ancien"
+              name="ancien"
+              placeholder="Votre mot de passe actuel"
+              autoComplete="current-password"
+              value={mdp.ancien}
+              onChange={(e) => setMdp({ ...mdp, ancien: e.target.value })}
+            />
+          </div>
           <div className="col-sm-6 mb-3">
             <label htmlFor="nouveau">Nouveau mot de passe</label>
-            <ChampMotDePasse id="nouveau" name="nouveau" placeholder="Créez un mot de passe" autoComplete="new-password"
-              value={mdp.nouveau} onChange={(e) => setMdp({ ...mdp, nouveau: e.target.value })} />
+            <ChampMotDePasse
+              id="nouveau"
+              name="nouveau"
+              placeholder="Créez un mot de passe"
+              autoComplete="new-password"
+              value={mdp.nouveau}
+              onChange={(e) => setMdp({ ...mdp, nouveau: e.target.value })}
+            />
           </div>
           <div className="col-sm-6 mb-3">
             <label htmlFor="confirmation">Confirmer le mot de passe</label>
-            <ChampMotDePasse id="confirmation" name="confirmation" placeholder="Confirmez le mot de passe" autoComplete="new-password"
-              value={mdp.confirmation} onChange={(e) => setMdp({ ...mdp, confirmation: e.target.value })} />
+            <ChampMotDePasse
+              id="confirmation"
+              name="confirmation"
+              placeholder="Confirmez le mot de passe"
+              autoComplete="new-password"
+              value={mdp.confirmation}
+              onChange={(e) => setMdp({ ...mdp, confirmation: e.target.value })}
+            />
           </div>
         </div>
-        <button className="btn btn-outline-light">Changer le mot de passe</button>
+        <button className="btn btn-outline-light">
+          Changer le mot de passe
+        </button>
       </form>
     </>
   );
