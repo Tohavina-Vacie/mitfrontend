@@ -13,6 +13,8 @@ import Documentation from "./assets/Components/Documentation/Documentation";
 import Home from "./assets/Components/Accueil/Home";
 
 import Login from "./Pages/Login";
+import MotDePasseOublie from "./Pages/MotDePasseOublie";
+import ReinitialiserMotDePasse from "./Pages/ReinitialiserMotDePasse";
 import Register from "./Pages/Register";
 import Profil from "./Pages/Profil";
 import FormationsListe from "./Pages/FormationsListe";
@@ -101,6 +103,8 @@ export default function App() {
         <Route path="/partenaires" element={<EntreprisesListe />} />
         <Route path="/documentation" element={<Documentation />} />
         <Route path="/connexion" element={<Login />} />
+        <Route path="/mot-de-passe-oublie" element={<MotDePasseOublie />} />
+        <Route path="/reinitialiser-mot-de-passe" element={<ReinitialiserMotDePasse />} />
         <Route path="/inscription" element={<Register />} />
         <Route path="/contact" element={<Contact />} />
         <Route path="/rendez-vous" element={<RendezVous />} />
